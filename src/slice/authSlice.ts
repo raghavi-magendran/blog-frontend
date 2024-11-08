@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
@@ -5,9 +6,8 @@ interface User {
     id: string;
     name: string;
     email: string;
-    role: string; 
+    role: string;
 }
-
 
 interface AuthState {
     user: User | null;
@@ -17,7 +17,6 @@ interface AuthState {
     error: string | null;
 }
 
-// Initialize the state with token from localStorage, if available
 const initialState: AuthState = {
     user: null,
     token: localStorage.getItem('access_token') || null,
@@ -30,15 +29,13 @@ export const loginUser = createAsyncThunk(
     'auth/login',
     async ({ username, password }: { username: string; password: string }, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_SERVER_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+            const response = await axios.post(`${process.env.REACT_APP_SERVER_BASE_URL}/auth/login`, {
+                username,
+                password,
             });
-            if (!response.ok) throw new Error('Login failed');
-            const data = await response.json();
-            localStorage.setItem('access_token', data.access_token);
-            return data.access_token;
+            const { access_token } = response.data;
+            localStorage.setItem('access_token', access_token);
+            return access_token;
         } catch (error) {
             return rejectWithValue('Invalid username or password');
         }
@@ -53,12 +50,10 @@ export const fetchUserDetails = createAsyncThunk(
         if (!token) return rejectWithValue('No token found');
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_SERVER_BASE_URL}/auth/profile`, {
-                headers: { 'Authorization': `Bearer ${token}` },
+            const response = await axios.get(`${process.env.REACT_APP_SERVER_BASE_URL}/auth/profile`, {
+                headers: { Authorization: `Bearer ${token}` },
             });
-            if (!response.ok) throw new Error('Failed to fetch user details');
-            const user = await response.json();
-            return user as User;
+            return response.data as User;
         } catch (error) {
             return rejectWithValue('Failed to fetch user details');
         }

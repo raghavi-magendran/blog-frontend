@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
+import axios from 'axios';
 import { getToken } from '../auth';
 import { useAuth } from '../contexts/authContext';
 
@@ -21,9 +22,8 @@ function Home() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('http://localhost:1116/blog/posts');
-      const data = await response.json();
-      setPosts(data);
+      const response = await axios.get('http://localhost:1116/blog/posts');
+      setPosts(response.data);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
@@ -34,18 +34,12 @@ function Home() {
     const token = getToken();
 
     try {
-      const response = await fetch(`http://localhost:1116/blog/${postId}`, {
-        method: 'DELETE',
+      await axios.delete(`http://localhost:1116/blog/${postId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
-
-      if (response.ok) {
-        setPosts(posts.filter(post => post._id !== postId));
-      } else {
-        console.error('Failed to delete post');
-      }
+      setPosts(posts.filter(post => post._id !== postId));
     } catch (error) {
       console.error('Error deleting post:', error);
     }

@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('access_token');
       setUser(null);
       setIsAuthenticated(false);
-      navigate('/'); 
+      navigate('/login'); 
   };
 
     return (

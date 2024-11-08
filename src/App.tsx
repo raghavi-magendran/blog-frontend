@@ -50,7 +50,11 @@ function App(): JSX.Element {
                     }
                 />
                 <Route path="/post/:postId" element={<PostDetails />} />
-                <Route path="/edit/:postId" element={<EditPost />} />
+                <Route path="/edit/:postId" element={
+              <ProtectedRoute>
+                <EditPost />
+              </ProtectedRoute>
+            }  />
             </Routes>
         </div>
     );
