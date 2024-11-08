@@ -5,7 +5,7 @@ import Home from './components/Home';
 import Login from './components/Login';
 import Create from './components/post/Create';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchUserDetails } from './slice/authSlice';
+import { fetchUserDetails, selectAuthToken } from './slice/authSlice';
 import { AppDispatch, RootState } from './store';
 import PostDetails from './components/PostDetails';
 import EditPost from './components/EditPost';
@@ -18,10 +18,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 function App(): JSX.Element {
     const dispatch = useDispatch<AppDispatch>();
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+    const token = useSelector(selectAuthToken);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (localStorage.getItem('access_token') && !isAuthenticated) {
+        if (token && !isAuthenticated) {
             dispatch(fetchUserDetails());
         }
     }, [dispatch, isAuthenticated]);

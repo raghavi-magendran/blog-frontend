@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
-import { getToken } from '../auth';
 import { useAuth } from '../contexts/authContext';
+import { useSelector } from 'react-redux';
+import { selectAuthToken } from '../slice/authSlice';
 
 interface Post {
   _id: string;
@@ -14,6 +15,7 @@ interface Post {
 function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const { isAuthenticated } = useAuth();
+  const token = useSelector(selectAuthToken);
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -31,8 +33,6 @@ function Home() {
 
   const deletePost = async (postId: string) => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
-    const token = getToken();
-
     try {
       await axios.delete(`http://localhost:1116/blog/${postId}`, {
         headers: {

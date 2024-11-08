@@ -1,4 +1,6 @@
 import { jwtDecode } from "jwt-decode";
+import { useSelector } from "react-redux";
+import { selectAuthToken } from "./slice/authSlice";
 
 export async function login(username: string, password: string) {
   const response = await fetch(`http://localhost:1116/blog/post`, {
@@ -20,12 +22,8 @@ export function logout() {
   localStorage.removeItem('token');
 }
 
-export function getToken() {
-  return localStorage.getItem('access_token');
-}
-
 export function isAuthenticated() {
-  const token = getToken();
+  const token = useSelector(selectAuthToken);
   if (!token) return false;
 
   try {

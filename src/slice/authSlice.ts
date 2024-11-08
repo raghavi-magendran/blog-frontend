@@ -10,19 +10,19 @@ interface User {
 }
 
 interface AuthState {
-    user: User | null;
-    token: string | null;
+    user: User | undefined;
+    token: string | undefined;
     isAuthenticated: boolean;
     loading: boolean;
-    error: string | null;
+    error: string | undefined;
 }
 
 const initialState: AuthState = {
-    user: null,
-    token: localStorage.getItem('access_token') || null,
-    isAuthenticated: !!localStorage.getItem('access_token'),
+    user: undefined,
+    token: undefined,
+    isAuthenticated: false,
     loading: false,
-    error: null,
+    error: undefined,
 };
 
 export const loginUser = createAsyncThunk(
@@ -33,9 +33,7 @@ export const loginUser = createAsyncThunk(
                 username,
                 password,
             });
-            const { access_token } = response.data;
-            localStorage.setItem('access_token', access_token);
-            return access_token;
+            return response.data.access_token;
         } catch (error) {
             return rejectWithValue('Invalid username or password');
         }
@@ -46,7 +44,7 @@ export const fetchUserDetails = createAsyncThunk(
     'auth/fetchUserDetails',
     async (_, { getState, rejectWithValue }) => {
         const state = getState() as RootState;
-        const token = state.auth.token || localStorage.getItem('access_token');
+        const token = state.auth.token;
         if (!token) return rejectWithValue('No token found');
 
         try {
@@ -64,31 +62,26 @@ export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        logout: (state) => {
-            localStorage.removeItem('access_token');
-            state.user = null;
-            state.token = null;
-            state.isAuthenticated = false;
-            state.loading = false;
-            state.error = null;
-        },
+        logout(state) {
+            return initialState;  
+          },
     },
     extraReducers: (builder) => {
         builder
             .addCase(loginUser.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.error = undefined;
             })
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.token = action.payload as string;
-                state.error = null;
+                state.error = undefined;
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
                 state.isAuthenticated = false;
-                state.token = null;
+                state.token = undefined;
                 state.error = action.payload as string;
             })
             .addCase(fetchUserDetails.pending, (state) => {
@@ -102,11 +95,12 @@ export const authSlice = createSlice({
             .addCase(fetchUserDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.isAuthenticated = false;
-                state.user = null;
+                state.user = undefined;
                 state.error = action.payload as string;
             });
     },
 });
 
+export const selectAuthToken = (state: RootState) => state.auth.token;
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;

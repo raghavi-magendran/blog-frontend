@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getToken } from '../../auth';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { selectAuthToken } from '../../slice/authSlice';
 
 function Create() {
   const [title, setTitle] = useState('');
@@ -9,10 +10,10 @@ function Create() {
   const [description, setDescription] = useState('');
   const [body, setBody] = useState('');
   const navigate = useNavigate();
+  const token = useSelector(selectAuthToken);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = getToken();
 
     try {
       const response = await axios.post(

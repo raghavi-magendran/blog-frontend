@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { selectAuthToken } from '../slice/authSlice';
+import { useSelector } from 'react-redux';
 
 interface AuthProviderProps {
     children: React.ReactNode;
@@ -16,17 +18,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<any>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const token = useSelector(selectAuthToken);  // Access the token from Redux
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
         if (token) {
             fetchUserDetails(token);
         }
-    }, []);
+    }, [token]); // Run this effect whenever the token changes
 
     const fetchUserDetails = async (token: string) => {
         try {
@@ -54,7 +56,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             });
             if (response.ok) {
                 const { access_token } = await response.json();
-                localStorage.setItem('access_token', access_token);
+                // Assume Redux is set up to store the token when login is successful
                 fetchUserDetails(access_token);
                 navigate('/');
             } else {
@@ -67,11 +69,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const logout = () => {
-      localStorage.removeItem('access_token');
-      setUser(null);
-      setIsAuthenticated(false);
-      navigate('/login'); 
-  };
+        // Assume Redux will clear the token and reset auth state on logout
+        setUser(undefined);
+        setIsAuthenticated(false);
+        navigate('/login');
+    };
 
     return (
         <AuthContext.Provider value={{ isAuthenticated, user, login, logout, loading }}>

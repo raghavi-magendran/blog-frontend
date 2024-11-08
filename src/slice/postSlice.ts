@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RootState } from '../store';
+import { useSelector } from 'react-redux';
+import { selectAuthToken } from './authSlice';
 interface Post {
     _id: string;
     title: string;
@@ -10,13 +12,13 @@ interface Post {
 interface PostsState {
     posts: Post[];
     loading: boolean;
-    error: string | null;
+    error: string | undefined;
 }
 
 const initialState: PostsState = {
     posts: [],
     loading: false,
-    error: null,
+    error: undefined,
 };
 
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async (_, { rejectWithValue }) => {
@@ -28,7 +30,7 @@ export const fetchPosts = createAsyncThunk('posts/fetchPosts', async (_, { rejec
     }
 });
 export const deletePost = createAsyncThunk('posts/deletePost', async (postId: string, { rejectWithValue }) => {
-    const token = localStorage.getItem('access_token');
+    const token = useSelector(selectAuthToken);
     if (!token) return rejectWithValue('No token found');
 
     try {
@@ -51,7 +53,7 @@ const postsSlice = createSlice({
         builder
             .addCase(fetchPosts.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.error = undefined;
             })
             .addCase(fetchPosts.fulfilled, (state, action) => {
                 state.loading = false;
@@ -63,7 +65,7 @@ const postsSlice = createSlice({
             })
             .addCase(deletePost.pending, (state) => {
                 state.loading = true;
-                state.error = null;
+                state.error = undefined;
             })
             .addCase(deletePost.fulfilled, (state, action) => {
                 state.loading = false;

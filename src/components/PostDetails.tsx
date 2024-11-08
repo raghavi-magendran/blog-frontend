@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { getToken } from '../auth';
 import { useAuth } from '../contexts/authContext';
+import { useSelector } from 'react-redux';
+import { selectAuthToken } from '../slice/authSlice';
 
 interface Post {
   _id: string;
@@ -14,16 +15,17 @@ interface Post {
 
 function PostDetails() {
   const { postId } = useParams<{ postId: string }>();
-  const [post, setPost] = useState<Post | null>(null);
+  const [post, setPost] = useState<Post | undefined>(undefined);
+  const [error, setError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
+  const token = useSelector(selectAuthToken);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
-      setError(null);
+      setError(undefined);
       try {
         const response = await axios.get(`http://localhost:1116/blog/post/${postId}`);
         setPost(response.data);
@@ -34,14 +36,12 @@ function PostDetails() {
         setLoading(false);
       }
     };
-
     fetchPost();
   }, [postId]);
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
-    const token = getToken();
-  
+    
     try {
       await axios.delete(`http://localhost:1116/blog/delete`, {
         headers: {

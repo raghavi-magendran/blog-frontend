@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { getToken } from '../auth';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 interface Post {
   title: string;
@@ -12,9 +13,10 @@ interface Post {
 
 function EditPost() {
   const { postId } = useParams<{ postId: string }>();
-  const [post, setPost] = useState<Post | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [post, setPost] = useState<Post | undefined>(undefined);
+  const [error, setError] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
+  const token = useSelector((state: RootState) => state.auth.token);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -31,17 +33,21 @@ function EditPost() {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = getToken();
+
     if (!token) {
       setError('You must be logged in to edit a post.');
       return;
     }
 
     try {
-      await axios.put(`http://localhost:1116/blog/edit`, post, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { postID: postId },
-      });
+      await axios.put(
+        `http://localhost:1116/blog/edit`,
+        post,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { postID: postId },
+        }
+      );
       navigate(`/post/${postId}`);
     } catch (err: any) {
       setError('Error updating post: ' + (err.response?.data || err.message));
@@ -155,9 +161,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     marginTop: '1.5rem',
     transition: 'background-color 0.3s ease',
-  },
-  saveButtonHover: {
-    backgroundColor: '#0056b3',
   },
   error: {
     color: 'red',
